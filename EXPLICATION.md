@@ -1,11 +1,14 @@
 (ce read me concerne les memebre du groupe uniquement)
-#petit read me pour nous aider a faire les chose proprement
 
-auteur : HALFOUN Cyndia
+# petit read me pour nous aider a faire les chose proprement
 
-##Quelques exemples de syntaxt php :
+# auteur :
 
-###Syntaxt de base
+HALFOUN Cyndia
+
+## Quelques exemples de syntaxt php :
+
+### Syntaxt de base
 
 - exemple sympa généré par Claude :
 
@@ -57,7 +60,7 @@ echo saluer("Alice");
 ?>
 ```
 
-###Exemple html-php
+### Exemple html-php
 
 - exemple sympa généré par Claude :
 
@@ -83,7 +86,7 @@ echo saluer("Alice");
 </html>
 ```
 
-###Exemple de lecture de donnée
+### Exemple de lecture de donnée
 
 - exemple sympa généré par Claude :
 
@@ -100,7 +103,7 @@ foreach ($films as $film) {
 }
 
 // --- Récupérer UN film par son id ---
-// ⚠️ TOUJOURS utiliser les requêtes préparées quand il y a des variables
+//   TOUJOURS utiliser les requêtes préparées quand il y a des variables
 //    pour éviter les injections SQL
 
 $id = 5; // vient par exemple de l'URL : $_GET["id"]
@@ -119,7 +122,7 @@ $films = $stmt->fetchAll();
 ?>
 ```
 
-###Exemple d'insertion de donnée
+### Exemple d'insertion de donnée
 
 - exemple sympa généré par Claude :
 
@@ -148,7 +151,7 @@ exit;
 ?>
 ```
 
-###Exemple de modification
+### Exemple de modification
 
 - exemple sympa généré par Claude :
 
@@ -172,7 +175,7 @@ exit;
 ?>
 ```
 
-###Exemple de supression
+### Exemple de supression
 
 - exemple sympa généré par Claude :
 
@@ -188,7 +191,7 @@ exit;
 ?>
 ```
 
-###Idee initiale de structure de projet
+### Idee initiale de structure de projet
 
 on prend en exemple la base de données de filmes
 
@@ -213,7 +216,7 @@ Projet/
 └── README.md
 ```
 
-###Git et Github
+### Git et Github
 
 - pour l'explication generale voyez ça comme ça : git manage le repo en local -- github stock le repo sur internet
 - explication de ce que j'ai fait pour initialiser (cree) le repo du projet
@@ -231,7 +234,7 @@ git init
 
 
 # 5. avec cette commande je prepare tout les fichier du repo locale (.) (pour l'instant que le readme.md) pour etre enregistré
-git add README.md
+git add .
 
 # 6. je cree le premier commit (sauvgarder la version des fichier choisis)
 git commit -m "docs: initialisation du projet"
@@ -258,7 +261,6 @@ git push -u origin main
 # origin : nom du repo distant
 # main : la branche locale enoyé sur github
 
-
 ```
 
 - chacun d'entre vous me donne sont compte github -- je vous ajoute comme contributeur au projet
@@ -271,9 +273,9 @@ git clone https://github.com/cynhlfn/projetSAE.git
 
 - j'expliquerai ici la suite des commande utilie des que j'en trouve l'utilité (n'hesite pas a me n'importe n'importe quel question sur ça 😉)
 
-**Ne jamais push ses modification dans la branche main **
+**Ne jamais push ses modification dans la branche main**
 
-**faire des commite propre et claire **
+**faire des commite propre et claire**
 
 - Convention des nommage de branche
 
@@ -332,13 +334,13 @@ git pull origin main              # récupère les dernières modifs
 git checkout -b feature/ma-tache # crée ta branche depuis le main à jour
 ```
 
-####Structure a retenir
+#### Structure a retenir
 
 - dans votre branche personnel  
   -faire des commite regulier
 - cree un full resquest quand une version est prete
 
-###Exemple sympa CRUD pour les films generer par Claude
+### Exemple sympa CRUD pour les films generer par Claude
 
 ```bash
 <?php
