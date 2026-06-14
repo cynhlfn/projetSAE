@@ -3,7 +3,7 @@
 //dans 'http://localhost/Projet_SAE/import/import_all.php' en locale
 //ne pas lancer ce fichier une autre fois cela a deja été fait et la base de données est deja cree 
 
-require '../config/database.php';
+require __DIR__ . '/../config/database.php';
 
 $dossier = __DIR__ . '/datasetCSV/';
 set_time_limit(0); // 0 = pas de limite
