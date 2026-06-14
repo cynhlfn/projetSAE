@@ -216,9 +216,10 @@ Projet/
 └── README.md
 ```
 
-### Git et Github
+## Git et Github
 
 - pour l'explication generale voyez ça comme ça : git manage le repo en local -- github stock le repo sur internet
+- j'expliquerai ici la suite des commande utilie des que j'en trouve l'utilité (n'hesite pas a me n'importe n'importe quel question sur ça 😉)
 - explication de ce que j'ai fait pour initialiser (cree) le repo du projet
   **NE REPRODUISEZ PAS CETTE PARTIE ELLE EST FAITE UNE SEUL FOIS PAS LE CREATEUR DU DEPO GIT**
 
@@ -263,15 +264,245 @@ git push -u origin main
 
 ```
 
+```
+GitHub → ton dépôt → Settings → Branches → Add rule
+→ Branch name pattern : main
+→ Cocher : "Require a pull request before merging"
+→ Save changes
+```
+
+- Ainsi personne (pas même moi) ne peut pusher directement sur main. Tout passe par une Pull Request.
+
+### Gestion d'une pull request (moi-cyndia)
+
+```
+1. aller sur GitHub → onglet "Pull Requests"
+2. Cliquer sur la PR en question
+3. Lire les fichiers modifiés (onglet "Files changed")
+4. Si tout va bien → bouton vert "Merge pull request" → "Confirm merge"
+5. Supprimer la branche mergée (bouton "Delete branch" qui apparaît)
+```
+
+### apres chaque merge (mettre le repo local a jour)
+
+```bash
+git checkout main
+git pull origin main
+# → Récupère sur ton ordi le main qui vient d'être mis à jour sur GitHub
+```
+
+### Résoudre un conflit (si GitHub signale un conflit)
+
+(Un conflit arrive quand deux personnes ont modifié la même ligne du même fichier.)
+
+```bash
+# Tu es sur main, tu veux merger la branche de ton collègue
+git checkout main
+git pull origin main
+
+# Tu récupères sa branche
+git checkout feature/liste-films
+git pull origin feature/liste-films
+
+# Tu tentes le merge
+git merge main
+# → Git affiche : CONFLICT in public/films.php
+
+# Tu ouvres le fichier concerné, tu verras ça :
+# <<<<<<< HEAD
+# ton code
+# =======
+# son code
+# >>>>>>> main
+
+# Tu choisis quoi garder (ou tu combines les deux)
+# Tu supprimes les balises <<<, ===, >>>
+
+# Tu valides la résolution
+git add public/films.php
+git commit -m "fix: résolution conflit sur films.php"
+git push origin feature/liste-films
+# → La PR est maintenant mergeable sur GitHub
+```
+
+### Pour les autre memebre du groupe
+
 - chacun d'entre vous me donne sont compte github -- je vous ajoute comme contributeur au projet
 - vous allez ensuite cree un repo sur vos ordinateur (dans htdocs)
 - ensuite executer la commande suivante
 
+- good to do :
+
 ```bash
+# Dire à Git qui tu es (apparaît dans les commits)
+git config --global user.name "Prénom Nom"
+git config --global user.email "ton.email@example.com"
+
+# Vérifier que c'est bien enregistré
+git config --list
+```
+
+- cloner le depos git :(dans votre dossier que vous avez cree dans htdocs)
+
+```bash
+# Télécharge une copie complète du dépôt sur ton ordi
 git clone https://github.com/cynhlfn/projetSAE.git
 ```
 
-- j'expliquerai ici la suite des commande utilie des que j'en trouve l'utilité (n'hesite pas a me n'importe n'importe quel question sur ça 😉)
+#### Avant de commencer à coder (à faire à chaque nouvelle tâche)
+
+```bash
+# 1. Revenir sur main
+git checkout main
+
+# 2. Récupérer les dernières modifications de tes coéquipiers
+git pull origin main
+# → Met ton main local à jour avec ce qui est sur GitHub
+#   TOUJOURS faire ça avant de créer une branche, sinon tu pars d'un main périmé
+
+# 3. Créer ta branche de fonctionnalité
+git checkout -b feature/ajout-film
+# -b = "create branch" : crée la branche ET bascule dessus en une commande (changer le nom de la branche selon ce que vous faite)
+
+# Vérifier sur quelle branche on est
+git branch
+# → * feature/ajout-film
+#     main
+```
+
+#### Pendant que tu codes
+
+```bash
+# Voir l'état de tes fichiers à tout moment
+git status
+# → Affiche :
+#   - fichiers modifiés (en rouge = pas encore stagés)
+#   - fichiers stagés (en vert = prêts pour le commit)
+#   - fichiers non trackés (nouveaux fichiers)
+
+# Voir exactement ce qui a changé ligne par ligne
+git diff
+# → Affiche les lignes ajoutées (+) et supprimées (-) depuis le dernier commit
+
+# Ajouter UN fichier spécifique au staging
+git add public/film_ajouter.php
+
+# Ajouter TOUS les fichiers modifiés d'un coup
+git add .
+# Le point = "tout ce dossier et sous-dossiers"
+# ⚠️ Vérifier avec git status avant de faire git add . pour ne pas ajouter des fichiers indésirables
+
+# Créer un commit avec les fichiers stagés
+git commit -m "feat: création du formulaire d'ajout de film"
+
+# Voir l'historique des commits
+git log --oneline
+# → Affiche quelque chose comme :
+#   a1b2c3d feat: création du formulaire d'ajout de film
+#   e4f5g6h db: schéma initial de la base de données
+```
+
+- Rythme recommandé pour les commits :
+
+```
+✅ Un commit = une chose logique accomplie
+   "feat: formulaire HTML de la page ajout"
+   "feat: traitement PHP du formulaire ajout"
+   "fix: correction validation champ année"
+
+❌ Pas de commit fourre-tout
+   "modifications diverses"
+   "travail du soir"
+```
+
+#### Envoyer son travail sur GitHub
+
+```bash
+# Premier push d'une nouvelle branche
+git push origin feature/ajout-film
+# "origin" = le dépôt GitHub
+# "feature/ajout-film" = la branche à envoyer
+
+# Les push suivants sur la même branche (plus court)
+git push
+# Fonctionne si tu as déjà pushé cette branche une fois
+```
+
+#### Ouvrir une Pull Request
+
+```
+1. Va sur GitHub → tu verras une bannière jaune
+   "feature/ajout-film had recent pushes" → bouton "Compare & pull request"
+2. Clique dessus
+3. Titre : "feat: ajout du formulaire d'ajout de film"
+4. Description : explique ce que tu as fait, ce que le relecteur doit tester
+5. "Create pull request"
+6. Préviens le responsable (toi) que la PR est prête
+```
+
+#### Rester à jour pendant que tu codes (le rebase)
+
+Si pendant que tu travailles sur ta branche, tes coéquipiers ont mergé du code dans main, tu dois intégrer leurs modifications dans ta branche. Il y a deux façons : merge ou rebase.
+
+Le rebase est plus propre car il réécrit l'historique comme si tu avais commencé ta branche depuis le main le plus récent :
+
+```bash
+# 1. Sauvegarder d'abord ton travail en cours
+git add .
+git commit -m "feat: travail en cours sur le formulaire"
+
+# 2. Récupérer le main à jour
+git fetch origin
+# → "fetch" télécharge les infos de GitHub SANS modifier tes fichiers locaux
+#   (contrairement à pull qui télécharge ET fusionne)
+
+# 3. Rebaser ta branche sur le main à jour
+git rebase origin/main
+# → Rejoue tes commits AU-DESSUS du main mis à jour
+# → Si aucun conflit : terminé, ta branche est à jour
+# → Si conflit : Git s'arrête et te demande de le résoudre
+
+# En cas de conflit pendant le rebase :
+# 1. Ouvre le fichier en conflit, résous-le
+git add fichier-en-conflit.php
+git rebase --continue
+# → Continue le rebase au commit suivant
+
+# Si tu veux tout annuler et revenir avant le rebase :
+git rebase --abort
+
+# 4. Push après rebase (il faut forcer car l'historique a changé)
+git push --force-with-lease origin feature/ajout-film
+# --force-with-lease = force mais annule si quelqu'un d'autre a pushé entre temps (plus sûr que --force)
+```
+
+- fetch vs pull :
+  git fetch → télécharge les infos de GitHub, ne touche pas à tes fichiers
+  git pull → fetch + merge automatique (= git fetch puis git merge)
+
+#### Récapitulatif — Le workflow complet d'une fonctionnalité
+
+```bash
+# ── DÉBUT DE TÂCHE ──────────────────────────────────
+git checkout main
+git pull origin main
+git checkout -b feature/ma-fonctionnalite
+
+# ── PENDANT LE DÉVELOPPEMENT (répéter) ──────────────
+# ... tu codes ...
+git add .
+git status          # vérifier ce qu'on va commiter
+git commit -m "feat: description claire de ce qui est fait"
+
+# Si le main a avancé entre temps :
+git fetch origin
+git rebase origin/main
+
+# ── FIN DE TÂCHE ────────────────────────────────────
+git push origin feature/ma-fonctionnalite
+# → Ouvrir la Pull Request sur GitHub
+# → Prévenir le responsable
+```
 
 **Ne jamais push ses modification dans la branche main**
 
@@ -408,4 +639,302 @@ $films = $stmt->fetchAll();
 </body>
 </html>
 
+```
+
+## creation de la base de données :
+
+```bash
+CREATE DATABASE IF NOT EXISTS movielens CHARACTER SET utf8mb4;
+USE movielens;
+
+CREATE TABLE annee (
+    idAn INT AUTO_INCREMENT PRIMARY KEY,
+    an      INT NOT NULL UNIQUE
+);
+
+CREATE TABLE film (
+    idFilm  INT          PRIMARY KEY,
+    titre    VARCHAR(255) NOT NULL,
+    idAn  INT,
+    FOREIGN KEY (idAn) REFERENCES annee(idAn) ON DELETE SET NULL
+);
+
+CREATE TABLE genre (
+    idGenre  INT         AUTO_INCREMENT PRIMARY KEY,
+    nomGenre VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE film_genre (
+    idFilm  INT NOT NULL,
+    idGenre  INT NOT NULL,
+    PRIMARY KEY (idFilm, idGenre),
+    FOREIGN KEY (idFilm) REFERENCES film(idFilm)  ON DELETE CASCADE,
+    FOREIGN KEY (idGenre) REFERENCES genre(idGenre)  ON DELETE CASCADE
+);
+
+CREATE TABLE fichefilm (
+    idFiche  INT         AUTO_INCREMENT PRIMARY KEY,
+    idFilm INT    NOT NULL,
+    imdbid  VARCHAR(20),
+    tmdbid  INT,
+    FOREIGN KEY (idFilm) REFERENCES movie(idFilm) ON DELETE CASCADE
+);
+
+CREATE TABLE utilisateur (
+    idUtilisateur INT PRIMARY KEY
+);
+
+CREATE TABLE noter (
+    idUtilisateur    INT            NOT NULL,
+    idFilm   INT            NOT NULL,
+    note      DECIMAL(2,1)   NOT NULL,
+    daterating INT,                        -- timestamp Unix
+    PRIMARY KEY (idUtilisateur, idFilm),
+    FOREIGN KEY (idUtilisateur)  REFERENCES utilisateur(idUtilisateur)   ON DELETE CASCADE,
+    FOREIGN KEY (idFilm) REFERENCES film(idFilm) ON DELETE CASCADE
+);
+
+CREATE TABLE tag (
+    idTag   INT          AUTO_INCREMENT PRIMARY KEY,
+    tagText VARCHAR(255) NOT NULL UNIQUE,
+    dateT INT,
+);
+
+CREATE TABLE taguer (
+    idUtilisateur    INT NOT NULL,
+    idFilm   INT NOT NULL,
+    idTag     INT NOT NULL,
+    dateT INT,
+    PRIMARY KEY (idUtilisateur, idFilm, idTag),
+    FOREIGN KEY (idUtilisateur)  REFERENCES utilisateur(idUtilisateur)   ON DELETE CASCADE,
+    FOREIGN KEY (idFilm) REFERENCES film(idFilm) ON DELETE CASCADE,
+    FOREIGN KEY (idTag)   REFERENCES tag(idTag)     ON DELETE CASCADE
+);
+```
+
+## php importation de données
+
+```bash
+<?php
+// import/import_all.php
+// Lancer UNE SEULE FOIS depuis le navigateur :
+// http://localhost/projet_sae/import/importdata.php
+
+require '../config/database.php';
+
+$dossier = __DIR__ . '/datasetCSV/';
+
+echo "<pre>";
+
+// ============================================================
+// ÉTAPE 1 — movies.csv
+// Alimente : annee, movie, genre, film_genre
+// ============================================================
+echo "=== ÉTAPE 1 : movies.csv ===\n";
+
+$fichier = fopen($dossier . "movies.csv", "r");
+fgetcsv($fichier); // saute l'en-tête
+
+$stmtAnnee     = $pdo->prepare("INSERT IGNORE INTO annee (an) VALUES (:an)");
+$stmtGetAnnee  = $pdo->prepare("SELECT idannee FROM annee WHERE an = :an");
+$stmtMovie     = $pdo->prepare("INSERT IGNORE INTO movie (movieid, titre, idannee) VALUES (:movieid, :titre, :idannee)");
+$stmtGenre     = $pdo->prepare("INSERT IGNORE INTO genre (nomgenre) VALUES (:nomgenre)");
+$stmtGetGenre  = $pdo->prepare("SELECT idgenre FROM genre WHERE nomgenre = :nomgenre");
+$stmtFilmGenre = $pdo->prepare("INSERT IGNORE INTO film_genre (movieid, idgenre) VALUES (:movieid, :idgenre)");
+
+$pdo->beginTransaction();
+$compteur = 0;
+
+while (($ligne = fgetcsv($fichier)) !== false) {
+    $movieid = (int)$ligne[0];
+    $titre   = $ligne[1];
+    $idannee = null;
+
+    // ── Extraire l'année du titre "Toy Story (1995)" ──────
+    if (preg_match('/\((\d{4})\)/', $titre, $match)) {
+        $an    = (int)$match[1];
+        $titre = trim(preg_replace('/\s*\(\d{4}\)/', '', $titre));
+
+        // Insérer l'année si elle n'existe pas
+        $stmtAnnee->execute([":an" => $an]);
+
+        // Récupérer son id
+        $stmtGetAnnee->execute([":an" => $an]);
+        $idannee = $stmtGetAnnee->fetchColumn();
+    }
+
+    // ── Insérer le film ───────────────────────────────────
+    $stmtMovie->execute([
+        ":movieid"  => $movieid,
+        ":titre"    => $titre,
+        ":idannee"  => $idannee
+    ]);
+
+    // ── Insérer les genres ────────────────────────────────
+    $genres = explode("|", $ligne[2]);
+    foreach ($genres as $nomgenre) {
+        if ($nomgenre === "(no genres listed)") continue;
+
+        $stmtGenre->execute([":nomgenre" => $nomgenre]);
+        $stmtGetGenre->execute([":nomgenre" => $nomgenre]);
+        $idgenre = $stmtGetGenre->fetchColumn();
+
+        $stmtFilmGenre->execute([
+            ":movieid" => $movieid,
+            ":idgenre" => $idgenre
+        ]);
+    }
+
+    $compteur++;
+    if ($compteur % 1000 === 0) {
+        $pdo->commit();
+        $pdo->beginTransaction();
+        echo "$compteur films traités...\n";
+    }
+}
+
+$pdo->commit();
+fclose($fichier);
+echo "✓ $compteur films importés\n\n";
+
+
+// ============================================================
+// ÉTAPE 2 — links.csv
+// Alimente : fichefilm (imdbid, tmdbid)
+// ============================================================
+echo "=== ÉTAPE 2 : links.csv ===\n";
+
+$fichier = fopen($dossier . "links.csv", "r");
+fgetcsv($fichier);
+
+$stmtFiche = $pdo->prepare("
+    INSERT IGNORE INTO fichefilm (movieid, imdbid, tmdbid)
+    VALUES (:movieid, :imdbid, :tmdbid)
+");
+
+$pdo->beginTransaction();
+$compteur = 0;
+
+while (($ligne = fgetcsv($fichier)) !== false) {
+    $movieid = (int)$ligne[0];
+    $imdbid  = $ligne[1] ?? null;
+    $tmdbid  = !empty($ligne[2]) ? (int)$ligne[2] : null;
+
+    // On insère seulement si le film existe dans movie
+    $stmtFiche->execute([
+        ":movieid" => $movieid,
+        ":imdbid"  => $imdbid,
+        ":tmdbid"  => $tmdbid
+    ]);
+
+    $compteur++;
+}
+
+$pdo->commit();
+fclose($fichier);
+echo "✓ $compteur fiches importées\n\n";
+
+
+// ============================================================
+// ÉTAPE 3 — ratings.csv
+// Alimente : user, noter
+// ============================================================
+echo "=== ÉTAPE 3 : ratings.csv ===\n";
+
+$fichier = fopen($dossier . "ratings.csv", "r");
+fgetcsv($fichier);
+
+$stmtUser  = $pdo->prepare("INSERT IGNORE INTO user (iduser) VALUES (:iduser)");
+$stmtNoter = $pdo->prepare("
+    INSERT IGNORE INTO noter (iduser, movieid, note, daterating)
+    VALUES (:iduser, :movieid, :note, :daterating)
+");
+
+$pdo->beginTransaction();
+$compteur = 0;
+
+while (($ligne = fgetcsv($fichier)) !== false) {
+    $stmtUser->execute([":iduser" => (int)$ligne[0]]);
+
+    $stmtNoter->execute([
+        ":iduser"     => (int)$ligne[0],
+        ":movieid"    => (int)$ligne[1],
+        ":note"       => (float)$ligne[2],
+        ":daterating" => (int)$ligne[3]
+    ]);
+
+    $compteur++;
+    if ($compteur % 5000 === 0) {
+        $pdo->commit();
+        $pdo->beginTransaction();
+        echo "$compteur notes traitées...\n";
+    }
+}
+
+$pdo->commit();
+fclose($fichier);
+echo "✓ $compteur notes importées\n\n";
+
+
+// ============================================================
+// ÉTAPE 4 — tags.csv
+// Alimente : user, tag, taguer
+// ============================================================
+echo "=== ÉTAPE 4 : tags.csv ===\n";
+
+$fichier = fopen($dossier . "tags.csv", "r");
+fgetcsv($fichier);
+
+$stmtUser   = $pdo->prepare("INSERT IGNORE INTO user (iduser) VALUES (:iduser)");
+$stmtTag    = $pdo->prepare("INSERT IGNORE INTO tag (tagtext) VALUES (:tagtext)");
+$stmtGetTag = $pdo->prepare("SELECT idtag FROM tag WHERE tagtext = :tagtext");
+$stmtTaguer = $pdo->prepare("
+    INSERT IGNORE INTO taguer (iduser, movieid, idtag, timestamp)
+    VALUES (:iduser, :movieid, :idtag, :timestamp)
+");
+
+$pdo->beginTransaction();
+$compteur = 0;
+
+while (($ligne = fgetcsv($fichier)) !== false) {
+    $iduser    = (int)$ligne[0];
+    $movieid   = (int)$ligne[1];
+    $tagtext   = trim($ligne[2]);
+    $timestamp = (int)$ligne[3];
+
+    if (empty($tagtext)) continue;
+
+    // Insérer l'user
+    $stmtUser->execute([":iduser" => $iduser]);
+
+    // Insérer le tag s'il n'existe pas
+    $stmtTag->execute([":tagtext" => $tagtext]);
+
+    // Récupérer l'id du tag
+    $stmtGetTag->execute([":tagtext" => $tagtext]);
+    $idtag = $stmtGetTag->fetchColumn();
+
+    // Insérer la relation ternaire
+    $stmtTaguer->execute([
+        ":iduser"    => $iduser,
+        ":movieid"   => $movieid,
+        ":idtag"     => $idtag,
+        ":timestamp" => $timestamp
+    ]);
+
+    $compteur++;
+    if ($compteur % 1000 === 0) {
+        $pdo->commit();
+        $pdo->beginTransaction();
+        echo "$compteur tags traités...\n";
+    }
+}
+
+$pdo->commit();
+fclose($fichier);
+echo "✓ $compteur tags importés\n\n";
+
+echo "=== IMPORT TERMINÉ ===";
+echo "</pre>";
+?>
 ```
