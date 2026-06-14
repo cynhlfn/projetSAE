@@ -43,3 +43,12 @@ Nous avons par la suite reflechit a un model entité association pour notre site
 voici le model conceptuel des données de notre base de données
 
 ![MEA du projet](images/MEA.png)
+
+- nous avons fait le choix de cree une table separer années pour eviter de stocqué une certaine années plusieur fois (si il y a 50 film sortie en 1998 on aura pas 50 fois l'années stocké mais plutot une seul fois dans la table années)
+
+### Deploiement
+
+- Afin de remedier au problem de base de données locale (sur phpmyadmin) et que chacun des membre du groupe doivent la cree de sont coté , ainsi que les modification qui serons que local donc pas partager, nous avons decidé de deployer la base de données sur railway (https://railway.com/) .
+- nous avons deployer l'application aussi sur railway
+- notre travail est en CD (continuous deployment) ce qui fait qu'a chaque push dans le main le projet ce deploie automatiquement
+- on suit le deploiement sur railway
