@@ -1,9 +1,11 @@
 <?php
 require 'config/database.php';
+// recuperer les genres de la base de données 
+$genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
   <meta charset="UTF-8">
@@ -15,9 +17,44 @@ require 'config/database.php';
   <link rel="stylesheet" href="public/css/style.css">
 </head>
 
+<!-- bootstrap scale -->
+<!-- 0 → 0px
+1 → 4px
+2 → 8px
+3 → 16px
+4 → 24px
+5 → 48px -->
+
 <body>
   <!-- header pour : logo + genres -->
-  <header>
+  <!-- border-bottom : ajouté une bordure en bas -->
+  <!-- py-3  : padding vertical  -->
+  <!-- py-4  : padding horizontal  -->
+  <header class="border-bottom py-3 px-4">
+    <!-- logo -->
+    <!-- fw-bold : font-weight: bold -->
+    <!-- fs-4 : font-size taille 4 -->
+    <h1 class="fw-bold fs-4">
+      <!-- text-danger : couleur du text rouge (danger de bootstrap) -->
+      <span class="text-danger">Wiki</span>film
+    </h1>
+    <!-- d-flex : display: flex  -->
+    <!-- flex-wrap : si trop de boutons il passe a la ligne suivante -->
+    <div class="d-flex flex-wrap gap-2 mt-2">
+      <!-- btn : class bootstrap pour les bouton   -->
+      <!-- active : montre visualement quel bouton est actif -->
+      <button class="btn btn-sm btn-dark genre-btn active" data-genre="tous">
+        Tous
+      </button>
+      <?php foreach ($genres as $genre) : ?>
+        <!--btn-outline-secondary : contour gris (pour les genres non selectionné)  -->
+        <!-- genre-btn : notre propre class css -->
+        <!-- data-genre : attribut html personnalié qu'on utilisera en js -->
+        <button class="btn btn-sm btn-outline-secondary genre-btn" data-genre="<?= $genre['idGenre'] ?>">
+          <?= htmlspecialchars($genre['nomGenre']) ?>
+        </button>
+      <?php endforeach; ?>
+    </div>
 
   </header>
 
