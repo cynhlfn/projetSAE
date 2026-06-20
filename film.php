@@ -3,6 +3,7 @@
 // Ici pas de HTML, juste du PHP pur
 
 require 'config/database.php';
+require 'config/tmdb.php'; // donne accès à $tmdbApiKey
 
 $id =1;/* $_GET['id'] ?? null;*/
 // le ?? null = si 'id' n'existe pas dans l'URL, on met null
@@ -38,6 +39,39 @@ $stmtImdb= $pdo->prepare("SELECT imdbid FROM fichefilm WHERE fichefilm.idFilm =:
 $stmtImdb->execute([':id'=> $id]);
 $Imdb= $stmtImdb->fetch();
 
+$stmttmdb= $pdo->prepare("SELECT tmdbid FROM fichefilm WHERE fichefilm.idFilm =:id ");
+$stmttmdb->execute([':id'=> $id]);
+$tmdbid= $stmttmdb->fetch();
+
+
+/* Pour les infos qui manquent on les recuperent via l'api de tmdb en envotant une rerquete http comme suit : */
+$url = "https://api.themoviedb.org/3/movie/" . $tmdbid['tmdbid'] . "?api_key=" . $tmdbApiKey . "&language=fr-FR";
+
+
+/* $response = file_get_contents($url); on la remplace avec ce qui suit */
+
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CAINFO, '/opt/lampp/etc/cacert.pem');
+$response = curl_exec($ch);
+curl_close($ch);
+
+
+
+/*var_dump($response);  cette commande affiche le type et et le contenu d une variable, dans le cas ou  file_get_contents($url)echoue elle contient fals 
+et effectivement dans ce premier cas elle  contient false */ 
+/* on a du texte brut dans response sous forme json , on cree un tableau associatif pour acceder au donnees  */
+
+$donneesTmdb = json_decode($response, true);
+ /* true pour tableau associatif, f&lse pour objet php */
+
+ /*print_r($donneesTmdb); pour afficher ce que contient donneeestmdb*/
+
+$overview = $donneesTmdb['overview'];
+$runtime  = $donneesTmdb['runtime'];
+$poster   = $donneesTmdb['poster_path'];
 
 ?>
 
@@ -62,8 +96,13 @@ $Imdb= $stmtImdb->fetch();
         <span> <?= $tag['tagText'] ?></span>   
         <?php endforeach; ?>
 
-        <p> <?= $Imdb['imdbid'] ?> </p>
-
+        <a href="https://www.imdb.com/title/tt<?= $Imdb['imdbid'] ?>" target="_blank">
+         Voir sur IMDb ↗
+        </a>
+        <!--target pout dire ou ouvrir l'onglet , _blank pour dire dans un nouvel onglet -->
+        <p><?= htmlspecialchars($overview) ?></p>
+        <p><?= $runtime ?> minutes</p>
+        <img src="https://image.tmdb.org/t/p/w500<?= $poster ?>" alt="affiche">
 
 
 </body>
