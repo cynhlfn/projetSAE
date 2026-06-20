@@ -101,34 +101,106 @@ foreach($donneesTmdbReal['crew'] as $membre){
 <head>
     <!-- PARTIE 2 : le HTML -->
     <!-- Ici on affiche les données récupérées au-dessus -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
 
 </head> 
 <body>
 
+
+
+
+<div class="container">   <!-- centre le contenu et limite la largeur -->
+  <div class="row">       <!-- crée une ligne -->
+         <div class="col-3">   <!-- prend 3 colonnes sur 12 -->
+           <img  class="img-fluid" src="https://image.tmdb.org/t/p/w500<?= $poster ?>" alt="affiche">
+        </div>
+        <div class="col-9">   <!-- prend 9 colonnes sur 12 -->
     <h1><?= htmlspecialchars($titre['titre'])  ?></h1>
-    <p> <?= $annee['an'] ?> </p>
-    <?php foreach($genres as $genre) : ?>
-        <span> <?= $genre['nomGenre'] ?></span>   
-        <?php endforeach; ?>
-        <p> <?= round($note['note_moyenne'],1) ?> </p>
+                      <div class="row"> 
+                                    <div class="col-3" > 
+                                    <!-- annee -->
+                                         <p> <?= $annee['an'] ?> </p>
 
-        <?php foreach($tags as  $tag) : ?>
-        <span> <?= $tag['tagText'] ?></span>   
-        <?php endforeach; ?>
 
-        <a href="https://www.imdb.com/title/tt<?= $Imdb['imdbid'] ?>" target="_blank">
-         Voir sur IMDb ↗
-        </a>
-        <!--target pout dire ou ouvrir l'onglet , _blank pour dire dans un nouvel onglet -->
-        <p><?= htmlspecialchars($overview) ?></p>
-        <p><?= $runtime ?> minutes</p>
-        <img src="https://image.tmdb.org/t/p/w500<?= $poster ?>" alt="affiche">
+                                    </div>
+                                    <div class="col-3" > 
+                                                        <!-- duree -->
+                                                         <p><?= $runtime ?> minutes</p>
+
+                                    </div>
+                                    <div class="col-3" > 
+                                    <!-- realisateur  -->
+                                        
         <?php foreach($realisateurs as $real) : ?>
         <span><?= htmlspecialchars($real) ?></span>
         <?php endforeach; ?>
+
+                                    </div>
+                          </div>
+
+
+
+
+                          <div class="row"> 
+                                    <div class="col-6" > 
+                                    <!-- genre -->
+                                           <?php foreach($genres as $genre) : ?>
+                                            <span class="badge bg-secondary me-1" > <?= $genre['nomGenre'] ?></span>   
+                                            <?php endforeach; ?>
+
+                                    </div>
+                                    <div class="col-3" > 
+                                                        <!-- note -->
+                                                                 <p> <?= round($note['note_moyenne'],1) ?> </p>
+
+
+                                    </div>
+
+                          </div>
+                          <div class="row"> 
+                            <!-- Description -->
+                                   <p><?= htmlspecialchars($overview) ?></p>
+
+                          </div>
+
+        
+        </div>
+ 
+<div class="row"> 
+<!-- tags-->
+         <?php foreach($tags as  $tag) : ?>
+        <span class="badge bg-light text-dark border me-1" > <?= $tag['tagText'] ?></span>   
+        <?php endforeach; ?>
+
+</div>
+
+<div class="row"> 
+<!-- imdb botton-->
+
+        <a  class="btn btn-warning"  href="https://www.imdb.com/title/tt<?= $Imdb['imdbid'] ?>" target="_blank">
+         Voir sur IMDb ↗
+        </a>
+                <!--target pout dire ou ouvrir l'onglet , _blank pour dire dans un nouvel onglet -->
+
+</div>
+
+</div>
+
+
+
+
+
+
+
+  
+        
+     
 
 
 
 </body>
 </html>
+
 
