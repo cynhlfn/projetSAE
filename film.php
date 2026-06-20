@@ -5,8 +5,11 @@
 require 'config/database.php';
 require 'config/tmdb.php'; // donne accès à $tmdbApiKey
 
-$id = 1; /* $_GET['id'] ?? null;*/
+$id = $_GET['id'] ?? null;
 // le ?? null = si 'id' n'existe pas dans l'URL, on met null
+if($id === null) {
+    die("Aucun film sélectionné.");
+}
 
 // Requête SQL pour récupérer les infos du film
 // Requête SQL pour récupérer les genres du film
@@ -95,6 +98,7 @@ $etoilesVides   = 5 - $etoilespleines - $demiEtoile; // le reste
     <!-- Ici on affiche les données récupérées au-dessus -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="public/css/style.css" rel="stylesheet">  <!-- après Bootstrap -->
 </head>
 <body>
 
@@ -134,7 +138,6 @@ $etoilesVides   = 5 - $etoilespleines - $demiEtoile; // le reste
                 </div>
                 <div class="col-3">
                     <!-- note -->
-                    <p><?= round($note['note_moyenne'], 1) ?></p>
                     <?php for ($i = 0; $i < $etoilespleines; $i++) : ?>
                         <i class="bi bi-star-fill text-warning"></i>
                     <?php endfor; ?>

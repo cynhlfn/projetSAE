@@ -1,0 +1,22 @@
+body {
+    background-color: #141414;
+    color: #b3b3b3;
+}
+
+h1 {
+    color: #ffffff;
+}
+
+.badge.bg-secondary {
+    background-color: #e50914 !important;
+}
+
+.badge.bg-light {
+    background-color: #2f2f2f !important;
+    color: #ffffff !important;
+    border-color: #444 !important;
+}
+
+a {
+    color: #b3b3b3;
+}
