@@ -1,2 +1,3 @@
 config/database.php
-config/tmdb.php 
+config/tmdb.php
+test-api.php
