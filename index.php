@@ -10,49 +10,74 @@ $offset = ($page - 1) * $limit;
 
 // Récupération des genres
 $genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll(PDO::FETCH_ASSOC);
+// recuperer le genres 
+$selectedGenre = $_GET['genre'] ?? null;
+$where = "
+    f.idAn = a.idAn
+    AND f.idFilm = fi.idFilm
+    AND f.idFilm = fg.idFilm
+    AND fg.idGenre = g.idGenre
+";
+$params = [];
 
-// Récupération des films
-$stmt = $pdo->prepare("
+if ($selectedGenre) {
+  $where .= " AND g.nomGenre = :genre";
+  $params[':genre'] = $selectedGenre;
+}
+
+$queryGenre = $selectedGenre ? '&genre=' . urlencode($selectedGenre) : '';
+
+
+$sql = "
 SELECT
     f.idFilm,
     f.titre,
-    a.an                                        AS annee,
+    a.an AS annee,
     fi.tmdbid,
-    GROUP_CONCAT(DISTINCT g.nomGenre
-                 ORDER BY g.nomGenre
-                 SEPARATOR ',')                 AS genres,
+    GROUP_CONCAT(DISTINCT g.nomGenre ORDER BY g.nomGenre SEPARATOR ',') AS genres,
     (
         SELECT ROUND(AVG(note), 1)
         FROM noter
         WHERE idFilm = f.idFilm
-    )                                           AS note_moyenne
-FROM
-    film f,
-    annee a,
-    fichefilm fi,
-    film_genre fg,
-    genre g
-WHERE
-    f.idAn       = a.idAn
-    AND f.idFilm = fi.idFilm
-    AND f.idFilm = fg.idFilm
-    AND fg.idGenre = g.idGenre
-GROUP BY
-    f.idFilm, f.titre, a.an, fi.tmdbid
-ORDER BY
-    f.titre ASC
+    ) AS note_moyenne
+FROM film f, annee a, fichefilm fi, film_genre fg, genre g
+WHERE $where
+GROUP BY f.idFilm, f.titre, a.an, fi.tmdbid
+ORDER BY f.titre ASC
 LIMIT :limit OFFSET :offset
-");
+";
+// Récupération des films
+$stmt = $pdo->prepare($sql);
+foreach ($params as $key => $value) {
+  $stmt->bindValue($key, $value);
+}
 
 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 
-$total = $pdo->query("SELECT COUNT(DISTINCT f.idFilm)
-FROM film f, fichefilm fi, film_genre fg
-WHERE f.idFilm = fi.idFilm
-AND f.idFilm = fg.idFilm
-")->fetchColumn();
+$countSql = "
+SELECT COUNT(DISTINCT f.idFilm)
+FROM film f
+JOIN fichefilm fi ON f.idFilm = fi.idFilm
+JOIN film_genre fg ON f.idFilm = fg.idFilm
+JOIN genre g ON fg.idGenre = g.idGenre
+WHERE 1=1
+";
+
+if ($selectedGenre) {
+  $countSql .= " AND g.nomGenre = :genre";
+}
+
+$countStmt = $pdo->prepare($countSql);
+
+if ($selectedGenre) {
+  $countStmt->bindValue(':genre', $selectedGenre);
+}
+
+$countStmt->execute();
+$total = $countStmt->fetchColumn();
+
 $pages = ceil($total / $limit);
 $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -129,12 +154,11 @@ function getPoster($tmdbid)
 
         <!-- Boutons Genres -->
         <div class="mt-3" id="genres-container">
-          <button class="genre-btn btn btn-dark active me-2 mb-2" data-genre="all">Tous</button>
-          <?php foreach ($genres as $g): ?>
-            <button class="genre-btn btn btn-outline-secondary me-2 mb-2"
-              data-genre="<?= htmlspecialchars($g['nomGenre']) ?>">
+          <a href="?" class="btn btn-dark me-2 mb-2">Tous</a> <?php foreach ($genres as $g): ?>
+            <a href="?genre=<?= urlencode($g['nomGenre']) ?>"
+              class="btn btn-outline-secondary me-2 mb-2">
               <?= htmlspecialchars($g['nomGenre']) ?>
-            </button>
+            </a>
           <?php endforeach; ?>
         </div>
       </div>
@@ -177,7 +201,7 @@ function getPoster($tmdbid)
 
       <!-- PREV -->
       <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?page=<?= $page - 1 ?>">Prev</a>
+        <a class="page-link" href="?page=<?= max(1, $page - 1) ?><?= $queryGenre ?>">Prev</a>
       </li>
 
       <!-- PAGES -->
@@ -187,7 +211,7 @@ function getPoster($tmdbid)
       ?>
       <?php for ($i = $start; $i <= $end; $i++): ?>
         <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-          <a class="page-link" href="?page=<?= $i ?>">
+          <a class="page-link" href="?page=<?= $i ?><?= $queryGenre ?>">
             <?= $i ?>
           </a>
         </li>
@@ -195,7 +219,7 @@ function getPoster($tmdbid)
 
       <!-- NEXT -->
       <li class="page-item <?= ($page >= $pages) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?page=<?= $page + 1 ?>">Next</a>
+        <a class="page-link" href="?page=<?= min($pages, $page + 1) ?><?= $queryGenre ?>">Next</a>
       </li>
 
     </ul>
