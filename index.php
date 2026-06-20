@@ -1,7 +1,56 @@
 <?php
 require __DIR__ . '/config/database.php';
-// recuperer les genres de la base de données 
-$genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll();
+require __DIR__ . '/config/tmdb.php';
+
+// Récupération des genres
+$genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupération des films
+$stmt = $pdo->query("
+    SELECT 
+        f.idFilm, 
+        f.titre, 
+        a.an as annee,
+        GROUP_CONCAT(DISTINCT g.nomGenre) as genres,
+        ROUND(AVG(n.note), 1) as note_moyenne,
+        fi.tmdbid
+    FROM film f
+    LEFT JOIN annee a ON f.idAn = a.idAn
+    LEFT JOIN film_genre fg ON f.idFilm = fg.idFilm
+    LEFT JOIN genre g ON fg.idGenre = g.idGenre
+    LEFT JOIN noter n ON f.idFilm = n.idFilm
+    LEFT JOIN fichefilm fi ON f.idFilm = fi.idFilm
+    GROUP BY f.idFilm, f.titre, a.an, fi.tmdbid
+    ORDER BY note_moyenne DESC, f.titre ASC
+    LIMIT 30
+");
+$films = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fonction pour récupérer l'affiche
+function getPoster($tmdbid)
+{
+  if (empty($tmdbid)) return null;
+
+  $url = "https://api.themoviedb.org/3/movie/{$tmdbid}?language=fr-FR";
+
+  $ch = curl_init($url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Authorization: Bearer " . TMDB_READ_TOKEN,
+    "Content-Type: application/json"
+  ]);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+  $response = curl_exec($ch);
+  curl_close($ch);
+
+  if ($response) {
+    $data = json_decode($response, true);
+    if (!empty($data['poster_path'])) {
+      return "https://image.tmdb.org/t/p/w342" . $data['poster_path'];
+    }
+  }
+  return null;
+}
 ?>
 
 <!DOCTYPE html>
@@ -11,71 +60,110 @@ $genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wikifilm</title>
-  <!-- bootstrap css -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <!-- notre css -->
-  <link rel="stylesheet" href="public/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: #f5f5f0;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      min-height: 100vh;
+    }
+
+    .logo {
+      font-size: 2.2rem;
+      font-weight: bold;
+    }
+
+    .logo span {
+      color: #E24B4A;
+    }
+
+    .film-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .film-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .film-poster {
+      height: 280px;
+      background-size: cover;
+      background-position: center;
+      background-color: #1a2634;
+    }
+
+    .film-info {
+      padding: 12px;
+    }
+
+    .film-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
 </head>
 
-<!-- bootstrap scale -->
-<!-- 0 → 0px
-1 → 4px
-2 → 8px
-3 → 16px
-4 → 24px
-5 → 48px -->
-
 <body>
-  <!-- header pour : logo + genres -->
-  <!-- border-bottom : ajouté une bordure en bas -->
-  <!-- py-3  : padding vertical  -->
-  <!-- py-4  : padding horizontal  -->
-  <header class="border-bottom py-3 px-4">
-    <!-- logo -->
-    <!-- fw-bold : font-weight: bold -->
-    <!-- fs-4 : font-size taille 4 -->
-    <h1 class="fw-bold fs-4">
-      <!-- text-danger : couleur du text rouge (danger de bootstrap) -->
-      <span class="text-danger">Wiki</span>film
-    </h1>
-    <!-- d-flex : display: flex  -->
-    <!-- flex-wrap : si trop de boutons il passe a la ligne suivante -->
-    <div class="d-flex flex-wrap gap-2 mt-2">
-      <!-- btn : class bootstrap pour les bouton   -->
-      <!-- active : montre visualement quel bouton est actif -->
-      <button class="btn btn-sm btn-dark genre-btn active" data-genre="tous">
-        Tous
-      </button>
-      <?php foreach ($genres as $genre) : ?>
-        <!--btn-outline-secondary : contour gris (pour les genres non selectionné)  -->
-        <!-- genre-btn : notre propre class css -->
-        <!-- data-genre : attribut html personnalié qu'on utilisera en js -->
-        <button class="btn btn-sm btn-outline-secondary genre-btn" data-genre="<?= $genre['idGenre'] ?>">
-          <?= htmlspecialchars($genre['nomGenre']) ?>
-        </button>
-      <?php endforeach; ?>
+  <div class="app">
+
+    <!-- HEADER -->
+    <header class="border-bottom py-3">
+      <div class="container">
+        <h1 class="logo">🎬 <span>Wiki</span>film</h1>
+      </div>
+    </header>
+
+    <!-- SEARCH -->
+    <div class="bg-light py-3 border-bottom">
+      <div class="container">
+        <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Rechercher un film...">
+      </div>
     </div>
 
-  </header>
-
-  <!-- recherche + tri -->
-  <section id="search-sort">
-    <div>
-      <span>🔎</span>
-      <input type="text"
-        id="search-input"
-        class="form-control">
+    <!-- GRILLE -->
+    <div class="container py-4">
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="list-view">
+        <?php foreach ($films as $film):
+          $genresList = $film['genres'] ? explode(',', $film['genres']) : [];
+          $poster = getPoster($film['tmdbid']);
+        ?>
+          <div class="col">
+            <div class="film-card h-100" onclick="showDetail(<?= $film['idFilm'] ?>)">
+              <div class="film-poster"
+                style="background-image: url('<?= $poster ? htmlspecialchars($poster) : 'https://via.placeholder.com/300x420/1a2634/ffffff?text=' . urlencode($film['titre']) ?>')">
+              </div>
+              <div class="film-info">
+                <div class="film-title"><?= htmlspecialchars($film['titre']) ?></div>
+                <div class="text-muted small">
+                  <?= htmlspecialchars($genresList[0] ?? '') ?>
+                  ★ <?= $film['note_moyenne'] ?: '–' ?>
+                </div>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
     </div>
-  </section>
 
-  <!-- afichage principale de la liste des filmes -->
-  <main>
-    <!--cartes des filmes  -->
-  </main>
+    <!-- VUE DETAIL -->
+    <div id="detail-view" class="container mt-4" style="display: none;"></div>
 
-  <!-- bootstrap javascript  -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- notre javascript -->
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="public/js/main.js"></script>
 </body>
 
