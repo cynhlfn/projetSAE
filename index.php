@@ -1,5 +1,5 @@
 <?php
-require 'config/database.php';
+require __DIR__ . '/config/database.php';
 // recuperer les genres de la base de données 
 $genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll();
 ?>
@@ -60,7 +60,12 @@ $genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll();
 
   <!-- recherche + tri -->
   <section id="search-sort">
-
+    <div>
+      <span>🔎</span>
+      <input type="text"
+        id="search-input"
+        class="form-control">
+    </div>
   </section>
 
   <!-- afichage principale de la liste des filmes -->
