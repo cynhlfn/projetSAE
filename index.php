@@ -2,11 +2,17 @@
 require __DIR__ . '/config/database.php';
 require __DIR__ . '/config/tmdb.php';
 
+// pour la pagination
+// regle de calcul : offset = (page - 1) * limit
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = 20;
+$offset = ($page - 1) * $limit;
+
 // Récupération des genres
 $genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll(PDO::FETCH_ASSOC);
 
 // Récupération des films
-$stmt = $pdo->query("
+$stmt = $pdo->prepare("
 SELECT
     f.idFilm,
     f.titre,
@@ -34,10 +40,22 @@ WHERE
 GROUP BY
     f.idFilm, f.titre, a.an, fi.tmdbid
 ORDER BY
-    note_moyenne DESC, f.titre ASC
-LIMIT 30
+    f.titre ASC
+LIMIT :limit OFFSET :offset
 ");
+
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+
+$total = $pdo->query("SELECT COUNT(DISTINCT f.idFilm)
+FROM film f, fichefilm fi, film_genre fg
+WHERE f.idFilm = fi.idFilm
+AND f.idFilm = fg.idFilm
+")->fetchColumn();
+$pages = ceil($total / $limit);
 $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 // Fonction pour récupérer l'affiche
 function getPoster($tmdbid)
@@ -74,58 +92,7 @@ function getPoster($tmdbid)
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wikifilm</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <style>
-    body {
-      background: #f5f5f0;
-    }
-
-    .app {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      min-height: 100vh;
-    }
-
-    .logo {
-      font-size: 2.2rem;
-      font-weight: bold;
-    }
-
-    .logo span {
-      color: #E24B4A;
-    }
-
-    .film-card {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .film-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .film-poster {
-      height: 280px;
-      background-size: cover;
-      background-position: center;
-      background-color: #1a2634;
-    }
-
-    .film-info {
-      padding: 12px;
-    }
-
-    .film-title {
-      font-weight: 600;
-      font-size: 1.05rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  <link rel="stylesheet" href="/Projet_SAE/public/css/style.css">
   </style>
 </head>
 
@@ -172,7 +139,6 @@ function getPoster($tmdbid)
         </div>
       </div>
     </div>
-
     <!-- GRILLE -->
     <div class="container py-4">
       <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="list-view">
@@ -206,9 +172,36 @@ function getPoster($tmdbid)
     <div id="detail-view" class="container mt-4" style="display: none;"></div>
 
   </div>
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
 
+      <!-- PREV -->
+      <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
+        <a class="page-link" href="?page=<?= $page - 1 ?>">Prev</a>
+      </li>
+
+      <!-- PAGES -->
+      <?php
+      $start = max(1, $page - 2);
+      $end = min($pages, $page + 2);
+      ?>
+      <?php for ($i = $start; $i <= $end; $i++): ?>
+        <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+          <a class="page-link" href="?page=<?= $i ?>">
+            <?= $i ?>
+          </a>
+        </li>
+      <?php endfor; ?>
+
+      <!-- NEXT -->
+      <li class="page-item <?= ($page >= $pages) ? 'disabled' : '' ?>">
+        <a class="page-link" href="?page=<?= $page + 1 ?>">Next</a>
+      </li>
+
+    </ul>
+  </nav>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="public/js/main.js"></script>
+  <script src="/Projet_SAE/public/js/main.js"></script>
 </body>
 
 </html>
