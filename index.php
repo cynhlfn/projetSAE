@@ -7,22 +7,35 @@ $genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll(PDO::FE
 
 // Récupération des films
 $stmt = $pdo->query("
-    SELECT 
-        f.idFilm, 
-        f.titre, 
-        a.an as annee,
-        GROUP_CONCAT(DISTINCT g.nomGenre) as genres,
-        ROUND(AVG(n.note), 1) as note_moyenne,
-        fi.tmdbid
-    FROM film f
-    LEFT JOIN annee a ON f.idAn = a.idAn
-    LEFT JOIN film_genre fg ON f.idFilm = fg.idFilm
-    LEFT JOIN genre g ON fg.idGenre = g.idGenre
-    LEFT JOIN noter n ON f.idFilm = n.idFilm
-    LEFT JOIN fichefilm fi ON f.idFilm = fi.idFilm
-    GROUP BY f.idFilm, f.titre, a.an, fi.tmdbid
-    ORDER BY note_moyenne DESC, f.titre ASC
-    LIMIT 30
+SELECT
+    f.idFilm,
+    f.titre,
+    a.an                                        AS annee,
+    fi.tmdbid,
+    GROUP_CONCAT(DISTINCT g.nomGenre
+                 ORDER BY g.nomGenre
+                 SEPARATOR ',')                 AS genres,
+    (
+        SELECT ROUND(AVG(note), 1)
+        FROM noter
+        WHERE idFilm = f.idFilm
+    )                                           AS note_moyenne
+FROM
+    film f,
+    annee a,
+    fichefilm fi,
+    film_genre fg,
+    genre g
+WHERE
+    f.idAn       = a.idAn
+    AND f.idFilm = fi.idFilm
+    AND f.idFilm = fg.idFilm
+    AND fg.idGenre = g.idGenre
+GROUP BY
+    f.idFilm, f.titre, a.an, fi.tmdbid
+ORDER BY
+    note_moyenne DESC, f.titre ASC
+LIMIT 30
 ");
 $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -127,9 +140,36 @@ function getPoster($tmdbid)
     </header>
 
     <!-- SEARCH -->
+    <!-- FILTRES -->
     <div class="bg-light py-3 border-bottom">
       <div class="container">
-        <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Rechercher un film...">
+        <div class="row g-3 align-items-center">
+          <!-- Recherche -->
+          <div class="col-md-5">
+            <input type="text" id="search-input" class="form-control" placeholder="🔍 Rechercher un film...">
+          </div>
+
+          <!-- Tri -->
+          <div class="col-md-4">
+            <select id="sort-select" class="form-select">
+              <option value="note-desc">Note décroissante</option>
+              <option value="year-desc">Année récente</option>
+              <option value="year-asc">Année ancienne</option>
+              <option value="title-asc">Titre A-Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Boutons Genres -->
+        <div class="mt-3" id="genres-container">
+          <button class="genre-btn btn btn-dark active me-2 mb-2" data-genre="all">Tous</button>
+          <?php foreach ($genres as $g): ?>
+            <button class="genre-btn btn btn-outline-secondary me-2 mb-2"
+              data-genre="<?= htmlspecialchars($g['nomGenre']) ?>">
+              <?= htmlspecialchars($g['nomGenre']) ?>
+            </button>
+          <?php endforeach; ?>
+        </div>
       </div>
     </div>
 
@@ -140,7 +180,11 @@ function getPoster($tmdbid)
           $genresList = $film['genres'] ? explode(',', $film['genres']) : [];
           $poster = getPoster($film['tmdbid']);
         ?>
-          <div class="col">
+          <div class="col film-item"
+            data-title="<?= htmlspecialchars(strtolower($film['titre'])) ?>"
+            data-genres="<?= htmlspecialchars(strtolower($film['genres'] ?? '')) ?>"
+            data-year="<?= $film['annee'] ?>"
+            data-note="<?= $film['note_moyenne'] ?? 0 ?>">
             <div class="film-card h-100" onclick="showDetail(<?= $film['idFilm'] ?>)">
               <div class="film-poster"
                 style="background-image: url('<?= $poster ? htmlspecialchars($poster) : 'https://via.placeholder.com/300x420/1a2634/ffffff?text=' . urlencode($film['titre']) ?>')">
