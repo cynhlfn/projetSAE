@@ -73,6 +73,26 @@ $overview = $donneesTmdb['overview'];
 $runtime  = $donneesTmdb['runtime'];
 $poster   = $donneesTmdb['poster_path'];
 
+
+$url2 = "https://api.themoviedb.org/3/movie/" . $tmdbid['tmdbid'] . "/credits?api_key=" . $tmdbApiKey . "&language=fr-FR";
+$ch2 = curl_init();
+curl_setopt($ch2, CURLOPT_URL, $url2);
+curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch2, CURLOPT_CAINFO, '/opt/lampp/etc/cacert.pem');
+$response2 = curl_exec($ch2);
+curl_close($ch2);
+$donneesTmdbReal = json_decode($response2, true);
+
+$realisateurs = [];
+foreach($donneesTmdbReal['crew'] as $membre){
+    if($membre['job']=== 'Director'){
+        $realisateurs[]= $membre['name'];
+    }
+
+}
+
+
+
 ?>
 
 
@@ -103,6 +123,10 @@ $poster   = $donneesTmdb['poster_path'];
         <p><?= htmlspecialchars($overview) ?></p>
         <p><?= $runtime ?> minutes</p>
         <img src="https://image.tmdb.org/t/p/w500<?= $poster ?>" alt="affiche">
+        <?php foreach($realisateurs as $real) : ?>
+        <span><?= htmlspecialchars($real) ?></span>
+        <?php endforeach; ?>
+
 
 
 </body>
