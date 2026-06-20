@@ -1,6 +1,7 @@
 <?php
-// Copie ce fichier en "database.php" et remplis avec tes identifiants Railway
-// Ne jamais mettre database.php sur GitHub !
+// pour les membre du groupe :
+// Copie ce fichier dans "database.php" et remplis avec les identifiants Railway
+// Ne jamais mettre database.php sur GitHub (met ajoute config/database.php a ton .gitignore)
 
 $host   = getenv("DB_HOST")     ?: "";  // ex: acela.proxy.rlwy.net
 $port   = getenv("DB_PORT")     ?: "";  // ex: 51877
