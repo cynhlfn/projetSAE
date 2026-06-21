@@ -163,7 +163,7 @@ foreach ($decennie as $d) {
 </head>
 
 
-<body>
+<body class="stats-page">
   <div class="app">
 
     <!-- HEADER -->
@@ -184,9 +184,9 @@ foreach ($decennie as $d) {
     </header>
 
     <div class="container py-4">
-      <h1 class="logo mb-4">
+      <h1 class="logo logo-stats mb-4">
         <i class="bi bi-bar-chart-line"></i>
-        <span>Stats</span>film
+        Stats film
       </h1>
 
       <!-- Chiffres -->
@@ -241,7 +241,7 @@ foreach ($decennie as $d) {
               <ul class="list-unstyled">
                 <?php foreach ($mieuxNotes as $i => $f): ?>
                   <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <span><span class="badge <?= $i === 0 ? 'bg-warning text-dark' : 'bg-light text-dark' ?> me-2"><?= $i + 1 ?></span>
+                    <span><span class="me-2 opacity-75"><?= $i + 1 ?></span>
                       <?= htmlspecialchars($f['titre']) ?> <small class="text-muted">(<?= $f['annee'] ?>)</small></span>
                     <span class="fw-bold text-warning-emphasis">&#9733; <?= $f['moyenne'] ?></span>
                   </li>
@@ -260,7 +260,7 @@ foreach ($decennie as $d) {
               <ul class="list-unstyled">
                 <?php foreach ($moinsBienNotes as $i => $f): ?>
                   <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <span><span class="badge <?= $i === 0 ? 'bg-danger' : 'bg-light text-dark' ?> me-2"><?= $i + 1 ?></span>
+                    <span><span class="me-2 opacity-75"><?= $i + 1 ?></span>
                       <?= htmlspecialchars($f['titre']) ?> <small class="text-muted">(<?= $f['annee'] ?>)</small></span>
                     <span class="fw-bold text-warning-emphasis">&#9733; <?= $f['moyenne'] ?></span>
                   </li>
@@ -280,7 +280,7 @@ foreach ($decennie as $d) {
               <ul class="list-unstyled">
                 <?php foreach ($plusVus as $i => $f): ?>
                   <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <span><span class="badge <?= $i === 0 ? 'bg-warning text-dark' : 'bg-light text-dark' ?> me-2"><?= $i + 1 ?></span>
+                    <span><span class="me-2 opacity-75"><?= $i + 1 ?></span>
                       <?= htmlspecialchars($f['titre']) ?> <small class="text-muted">(<?= $f['annee'] ?>)</small></span>
                     <span class="fw-bold text-warning-emphasis"><?= number_format($f['nb_votes'], 0, ',', ' ') ?> votes</span>
                   </li>
@@ -301,7 +301,7 @@ foreach ($decennie as $d) {
               <ul class="list-unstyled">
                 <?php foreach ($plusControverses as $i => $f): ?>
                   <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <span><span class="badge <?= $i === 0 ? 'bg-warning text-dark' : 'bg-light text-dark' ?> me-2"><?= $i + 1 ?></span>
+                    <span><span class="me-2 opacity-75"><?= $i + 1 ?></span>
                       <?= htmlspecialchars($f['titre']) ?> <small class="text-muted">(moy. <?= $f['moyenne'] ?>)</small></span>
                     <span class="fw-bold text-warning-emphasis">&sigma; <?= $f['ecart_type'] ?></span>
                   </li>
@@ -320,7 +320,7 @@ foreach ($decennie as $d) {
               <ul class="list-unstyled">
                 <?php foreach ($plusTagues as $i => $f): ?>
                   <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <span><span class="badge <?= $i === 0 ? 'bg-warning text-dark' : 'bg-light text-dark' ?> me-2"><?= $i + 1 ?></span>
+                    <span><span class="me-2 opacity-75"><?= $i + 1 ?></span>
                       <?= htmlspecialchars($f['titre']) ?></span>
                     <span class="fw-bold text-warning-emphasis"><?= $f['nb_tags'] ?> tags</span>
                   </li>
@@ -382,7 +382,7 @@ foreach ($decennie as $d) {
               <div class="d-flex flex-wrap gap-2">
                 <?php foreach ($topTags as $t): ?>
                   <span class="badge bg-light text-dark border rounded-pill px-3 py-2">
-                    <?= htmlspecialchars($t['tagText']) ?> <b class="text-danger"><?= $t['nb_utilisations'] ?></b>
+                    <?= htmlspecialchars($t['tagText']) ?> <b class="text-warning-emphasis"><?= $t['nb_utilisations'] ?></b>
                   </span>
                 <?php endforeach; ?>
               </div>
