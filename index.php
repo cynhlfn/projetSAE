@@ -3,10 +3,6 @@ require __DIR__ . '/config/init.php';
 require __DIR__ . '/config/database.php';
 require __DIR__ . '/config/tmdb.php';
 
-echo "TMDB_TOKEN : " . getenv("TMDB_TOKEN") . "<br>";
-echo "TMDB_READ_TOKEN : " . TMDB_READ_TOKEN . "<br>";
-die();
-
 // pour la pagination
 // regle de calcul : offset = (page - 1) * limit
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -123,29 +119,53 @@ $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 // Fonction pour récupérer l'affiche
-function getPoster($tmdbid)
+function getPosters(array $films): array
 {
-  if (empty($tmdbid)) return null;
+  $posters   = [];
+  $handles   = [];
+  $multiCurl = curl_multi_init();
 
-  $url = "https://api.themoviedb.org/3/movie/{$tmdbid}?language=fr-FR";
-
-  $ch = curl_init($url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-  curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "Authorization: Bearer " . TMDB_READ_TOKEN,
-    "Content-Type: application/json"
-  ]);
-  curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-  $response = curl_exec($ch);
-  curl_close($ch);
-
-  if ($response) {
-    $data = json_decode($response, true);
-    if (!empty($data['poster_path'])) {
-      return "https://image.tmdb.org/t/p/w342" . $data['poster_path'];
+  foreach ($films as $film) {
+    $tmdbid = $film['tmdbid'];
+    if (empty($tmdbid)) {
+      $posters[$film['idFilm']] = null;
+      continue;
     }
+
+    $ch = curl_init("https://api.themoviedb.org/3/movie/{$tmdbid}?language=fr-FR");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      "Authorization: Bearer " . TMDB_READ_TOKEN,
+      "Content-Type: application/json"
+    ]);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_multi_add_handle($multiCurl, $ch);
+    $handles[$film['idFilm']] = $ch;
   }
-  return null;
+
+  // Lance tous les appels EN MÊME TEMPS
+  do {
+    curl_multi_exec($multiCurl, $running);
+    curl_multi_select($multiCurl);
+  } while ($running > 0);
+
+  // Récupère les résultats
+  foreach ($handles as $idFilm => $ch) {
+    $response = curl_multi_getcontent($ch);
+    if ($response) {
+      $data = json_decode($response, true);
+      $posters[$idFilm] = !empty($data['poster_path'])
+        ? "https://image.tmdb.org/t/p/w342" . $data['poster_path']
+        : null;
+    } else {
+      $posters[$idFilm] = null;
+    }
+    curl_multi_remove_handle($multiCurl, $ch);
+    curl_close($ch);
+  }
+
+  curl_multi_close($multiCurl);
+  return $posters;
 }
 ?>
 
@@ -215,9 +235,12 @@ function getPoster($tmdbid)
     <!-- GRILLE -->
     <div class="container py-4">
       <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="list-view">
+        <?php
+        $posters = getPosters($films); // ← UN seul appel pour tous les films 
+        ?>
         <?php foreach ($films as $film):
           $genresList = $film['genres'] ? explode(',', $film['genres']) : [];
-          $poster = getPoster($film['tmdbid']);
+          $poster = $posters[$film['idFilm']] ?? null;
         ?>
           <div class="col film-item"
             data-title="<?= htmlspecialchars(strtolower($film['titre'])) ?>"
