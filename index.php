@@ -177,6 +177,10 @@ function getPosters(array $films): array
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wikifilm</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="public/css/style.css">
   </style>
 </head>
@@ -185,30 +189,45 @@ function getPosters(array $films): array
   <div class="app">
 
     <!-- HEADER -->
-    <header class="border-bottom py-3">
-      <div class="container">
-        <h1 class="logo">🎬 <span>Wiki</span>film</h1>
+    <header class="main-header py-3">
+      <div class="container d-flex justify-content-between align-items-center">
+
+        <h1 class="logo">
+          <i class="bi bi-film"></i>
+          <span>Wiki</span>film
+        </h1>
+
+        <a href="stats.php" class="btn btn-stats">
+          <i class="bi bi-bar-chart-line"></i>
+          Statistiques
+        </a>
+
       </div>
     </header>
-
-    <!-- SEARCH -->
-    <!-- FILTRES -->
-    <div class="bg-light py-3 border-bottom">
+    <!-- filtres -->
+    <div class="filters-section py-4">
       <div class="container">
         <form method="GET">
 
           <div class="row g-3 align-items-center">
             <!-- Recherche -->
             <div class="col-md-5">
-
-              <input type="text" name="search" class="form-control" placeholder="🔍 Rechercher un film..." value="<?= htmlspecialchars($search) ?>">
-              <button type="submit" class="btn btn-primary">Rechercher</button>
-
+              <div class="search-wrapper">
+                <input
+                  type="text"
+                  name="search"
+                  class="form-control search-input"
+                  placeholder="Rechercher un film..."
+                  value="<?= htmlspecialchars($search) ?>">
+                <button type="submit" class="btn btn-search">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
             </div>
 
             <!-- Tri -->
             <div class="col-md-4">
-              <select name="sort" id="sort-select" class="form-select">
+              <select name="sort" id="sort-select" class="form-select custom-select">
                 <option value="note-desc">Note décroissante</option>
                 <option value="year-desc">Année récente</option>
                 <option value="year-asc">Année ancienne</option>
@@ -234,7 +253,7 @@ function getPosters(array $films): array
     </div>
     <!-- GRILLE -->
     <div class="container py-4">
-      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="list-view">
+      <div class="row g-4" id="list-view">
         <?php
         $posters = getPosters($films); // ← UN seul appel pour tous les films 
         ?>
@@ -242,18 +261,21 @@ function getPosters(array $films): array
           $genresList = $film['genres'] ? explode(',', $film['genres']) : [];
           $poster = $posters[$film['idFilm']] ?? null;
         ?>
-          <div class="col film-item"
+          <div class="col-12 col-md-6 col-lg-4"
             data-title="<?= htmlspecialchars(strtolower($film['titre'])) ?>"
             data-genres="<?= htmlspecialchars(strtolower($film['genres'] ?? '')) ?>"
             data-year="<?= $film['annee'] ?>"
             data-note="<?= $film['note_moyenne'] ?? 0 ?>">
             <div class="film-card h-100" onclick="window.location.href='film.php?id=<?= $film['idFilm'] ?>'">
-              <div class="film-poster"
-                style="background-image: url('<?= $poster ? htmlspecialchars($poster) : 'https://via.placeholder.com/300x420/1a2634/ffffff?text=' . urlencode($film['titre']) ?>')">
+              <div class="film-poster">
+                <img
+                  src="<?= $poster ? htmlspecialchars($poster) : 'https://via.placeholder.com/300x420/1a2634/ffffff?text=' . urlencode($film['titre']) ?>"
+                  alt="<?= htmlspecialchars($film['titre']) ?>"
+                  class="poster-img">
               </div>
               <div class="film-info">
                 <div class="film-title"><?= htmlspecialchars($film['titre']) ?></div>
-                <div class="text-muted small">
+                <div class="film-meta small">
                   <?= htmlspecialchars($genresList[0] ?? '') ?>
                   ★ <?= $film['note_moyenne'] ?: '–' ?>
                 </div>
@@ -263,9 +285,6 @@ function getPosters(array $films): array
         <?php endforeach; ?>
       </div>
     </div>
-
-    <!-- VUE DETAIL -->
-    <div id="detail-view" class="container mt-4" style="display: none;"></div>
 
   </div>
   <nav class="mt-4">

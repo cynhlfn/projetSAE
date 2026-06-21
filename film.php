@@ -83,11 +83,14 @@ curl_close($ch2);
 $donneesTmdbReal = json_decode($response2, true);
 
 $realisateurs = [];
-foreach ($donneesTmdbReal['crew'] as $membre) {
-  if ($membre['job'] === 'Director') {
-    $realisateurs[] = $membre['name'];
+if (!empty($donneesTmdbReal['crew'])) {
+  foreach ($donneesTmdbReal['crew'] as $membre) {
+    if ($membre['job'] === 'Director') {
+      $realisateurs[] = $membre['name'];
+    }
   }
 }
+
 
 /***************** partie code claude  */
 $noteArrondie   = round($note['note_moyenne'], 1); // 3.9
@@ -101,97 +104,112 @@ $etoilesVides   = 5 - $etoilespleines - $demiEtoile; // le reste
 <html lang="fr">
 
 <head>
-  <!-- PARTIE 2 : le HTML -->
-  <!-- Ici on affiche les données récupérées au-dessus -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="public/css/style.css" rel="stylesheet"> <!-- après Bootstrap -->
 </head>
 
 <body>
-  <!-- HEADER -->
-  <header class="border-bottom py-3">
-    <div class="container">
-      <h1 class="logo">🎬 <span>Wiki</span>film</h1>
-    </div>
-  </header>
-  <a href="index.php" class="btn btn-secondary mb-3">
-    ← Retour à l’accueil
-  </a>
-  <div class="container"> <!-- centre le contenu et limite la largeur -->
-    <div class="row"> <!-- crée une ligne -->
+  <div class="app">
 
-      <div class="col-3"> <!-- prend 3 colonnes sur 12 -->
-        <img class="img-fluid" src="https://image.tmdb.org/t/p/w500<?= $poster ?>" alt="affiche">
-      </div>
+    <!-- HEADER -->
+    <header class="main-header py-3">
+      <div class="container d-flex justify-content-between align-items-center">
 
-      <div class="col-9"> <!-- prend 9 colonnes sur 12 -->
-        <h1><?= htmlspecialchars($titre['titre']) ?></h1>
+        <h1 class="logo">
+          <i class="bi bi-film"></i>
+          <span>Wiki</span>film
+        </h1>
 
-        <div class="row">
-          <div class="col-3">
-            <!-- annee -->
-            <p><?= $annee['an'] ?></p>
-          </div>
-          <div class="col-3">
-            <!-- duree -->
-            <p><?= $runtime ?> minutes</p>
-          </div>
-          <div class="col-3">
-            <!-- realisateur -->
-            <?php foreach ($realisateurs as $real) : ?>
-              <span><?= htmlspecialchars($real) ?></span>
-            <?php endforeach; ?>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-6">
-            <!-- genre -->
-            <?php foreach ($genres as $genre) : ?>
-              <span class="badge bg-secondary me-1"><?= $genre['nomGenre'] ?></span>
-            <?php endforeach; ?>
-          </div>
-          <div class="col-3">
-            <!-- note -->
-            <?php for ($i = 0; $i < $etoilespleines; $i++) : ?>
-              <i class="bi bi-star-fill text-warning"></i>
-            <?php endfor; ?>
-            <?php if ($demiEtoile) : ?>
-              <i class="bi bi-star-half text-warning"></i>
-            <?php endif; ?>
-            <?php for ($i = 0; $i < $etoilesVides; $i++) : ?>
-              <i class="bi bi-star text-warning"></i>
-            <?php endfor; ?>
-          </div>
-        </div>
-
-        <div class="row">
-          <!-- Description -->
-          <p><?= htmlspecialchars($overview) ?></p>
-        </div>
+        <a href="index.php" class="btn btn-stats">
+          <i class="bi bi-arrow-left"></i>
+          Retour
+        </a>
 
       </div>
+    </header>
 
-    </div>
+    <!-- HERO FILM -->
+    <section class="film-hero"
+      style="background-image: url('https://image.tmdb.org/t/p/original<?= $poster ?>');">
 
-    <div class="row">
-      <!-- tags -->
-      <?php foreach ($tags as $tag) : ?>
-        <span class="badge bg-light text-dark border me-1"><?= $tag['tagText'] ?></span>
-      <?php endforeach; ?>
-    </div>
+      <div class="film-hero-overlay"></div>
 
-    <div class="row">
-      <!-- imdb botton -->
-      <a class="btn btn-warning" href="https://www.imdb.com/title/tt<?= $Imdb['imdbid'] ?>" target="_blank">
-        Voir sur IMDb ↗
-      </a>
-      <!--target pout dire ou ouvrir l'onglet , _blank pour dire dans un nouvel onglet -->
-    </div>
+      <div class="container film-hero-content">
+        <div class="row align-items-center">
+
+          <!-- POSTER -->
+          <div class="col-12 col-md-4 text-center mb-4 mb-md-0">
+            <img class="film-hero-poster"
+              src="https://image.tmdb.org/t/p/w500<?= $poster ?>"
+              alt="affiche">
+          </div>
+
+          <!-- INFOS -->
+          <div class="col-12 col-md-8">
+
+            <h1 class="film-hero-title">
+              <?= htmlspecialchars($titre['titre']) ?>
+            </h1>
+
+            <div class="film-meta mb-3">
+              <span><?= $annee['an'] ?></span>
+              <span>• <?= $runtime ?> min</span>
+            </div>
+
+            <!-- GENRES -->
+            <div class="mb-3">
+              <?php foreach ($genres as $genre): ?>
+                <span class="badge genre-badge me-1">
+                  <?= htmlspecialchars($genre['nomGenre']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+
+            <!-- NOTE -->
+            <div class="mb-3">
+              <?php for ($i = 0; $i < $etoilespleines; $i++): ?>
+                <i class="bi bi-star-fill text-warning"></i>
+              <?php endfor; ?>
+
+              <?php if ($demiEtoile): ?>
+                <i class="bi bi-star-half text-warning"></i>
+              <?php endif; ?>
+
+              <?php for ($i = 0; $i < $etoilesVides; $i++): ?>
+                <i class="bi bi-star text-warning"></i>
+              <?php endfor; ?>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <p class="film-overview">
+              <?= htmlspecialchars($overview) ?>
+            </p>
+
+            <!-- ACTIONS -->
+            <div class="mt-4 d-flex gap-3 flex-wrap">
+
+              <a class="btn btn-search"
+                href="https://www.imdb.com/title/tt<?= $Imdb['imdbid'] ?>"
+                target="_blank">
+                <i class="bi bi-box-arrow-up-right"></i>
+                IMDb
+              </a>
+
+
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </section>
 
   </div>
-
 </body>
 
 </html>
