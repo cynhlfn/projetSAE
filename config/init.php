@@ -28,7 +28,10 @@ try {
 }
 
 // ── Créer tmdb.php si inexistant (Railway) ──────────────────
-if (!file_exists(__DIR__ . '/tmdb.php')) {
+// ── tmdb.php ─────────────────────────────────────────────────
+// Créer seulement si inexistant ET si on est sur Railway
+// (sur Railway TMDB_TOKEN est défini, en local il ne l'est pas)
+if (!file_exists(__DIR__ . '/tmdb.php') && getenv("TMDB_TOKEN")) {
   file_put_contents(
     __DIR__ . '/tmdb.php',
     '<?php
