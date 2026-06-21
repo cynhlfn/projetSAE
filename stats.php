@@ -9,7 +9,25 @@ $noteGlobale = $pdo -> query ( "SELECT ROUND(AVG(note), 2)  FROM noter" ) -> fet
 
 
 //1. FILMS LES MIEUX NOTES 
-    // On va exiger 20 votes minimum pour qu'un film apparaisse dans le classement
+
+    /*  
+    On va exiger 20 votes minimum pour qu'un film apparaisse dans le classement
+    
+    On veut les films les mieux notés
+   
+    On va faire une jointure entre la table film et la table annee pour récupérer l'année du film, 
+   puis une jointure avec la table noter pour récupérer les notes.
+   
+    On va grouper par film et calculer la moyenne des notes et le nombre de votes pour chaque film.
+    
+    On va ensuite filtrer pour ne garder que les films ayant au moins 20 votes.
+    
+    On va trier par moyenne décroissante, puis par nombre de votes décroissant afin de départager les égalités.   
+
+    On limite enfin aux 10 films les mieux notés.
+
+    */
+
 
 $mieuxNotes = $pdo->query("
     SELECT f.titre, 
@@ -26,8 +44,29 @@ $mieuxNotes = $pdo->query("
 ")->fetchAll();
 
 
+
+
 // 2. FILMS LES MOINS BIEN NOTES
-    // On va exiger 20 votes minimum pour qu'un film apparaisse dans le classement
+
+    /* 
+    On va exiger 20 votes minimum pour qu'un film apparaisse dans le classement
+
+    On veut les films les moins bien notés
+   
+    On va faire une jointure entre la table film et la table annee pour récupérer l'année du film, 
+   puis une jointure avec la table noter pour récupérer les notes.
+   
+   On va grouper par film et calculer la moyenne des notes et le nombre de votes pour chaque film.
+    
+   On va ensuite filtrer pour ne garder que les films ayant au moins 20 votes.
+    
+   On va trier par moyenne croissante, puis par nombre de votes décroissant afin de départager les égalités.
+   
+   On limite enfin aux 10 films les moins bien notés.
+
+   */
+
+
 
 $moinsBienNotes = $pdo->query("
     SELECT f.titre, 
@@ -44,7 +83,26 @@ $moinsBienNotes = $pdo->query("
 ")->fetchAll();
 
 
+
 // 3. FILMS LES PLUS VUS ( on va considérer que ce sont les plus notés) 
+
+    /* 
+    On va exiger 20 votes minimum pour qu'un film apparaisse dans le classement.
+
+    On cherche les films les plus vus en assimilant les vues au nombre de notes.
+   
+    On va faire une jointure entre la table film et la table annee pour récupérer l'année du film, 
+   puis une jointure avec la table noter pour récupérer les notes.
+   
+   On va grouper par film et calculer la moyenne des notes et le nombre de votes pour chaque film.
+    
+   On va trier par nombre de votes décroissant afin d'obtenir les films les plus vus en premier.
+
+   On limite enfin aux 10 films les plus vus.
+
+   */
+
+
 $plusVus = $pdo->query("
     SELECT f.titre, 
             a.an AS annee,
@@ -54,12 +112,27 @@ $plusVus = $pdo->query("
     JOIN annee a ON f.idAn = a.idAn
     JOIN noter n ON f.idFilm = n.idFilm
     GROUP BY f.idFilm, f.titre, a.an
+    HAVING COUNT(n.note) >= 20
     ORDER BY  nb_votes DESC
     LIMIT 10
 ")->fetchAll();
 
 
 // 4. FILMS LES PLUS TAGUES 
+
+    /* 
+    On cherche les films les plus tagués.
+   
+    On va faire une jointure entre la table film et la table taguer pour récupérer les tags associés aux films.
+   
+   On va grouper par film afin de compter le nombre de tags associés à chaque film.
+    
+   On va trier par nombre de tags décroissant afin d'obtenir les films les plus tagués en premier.
+   
+   On limite enfin aux 10 films les plus tagués.
+
+   */
+  
 $plusTagues = $pdo->query("
     SELECT f.titre, 
             COUNT(t.idTag)              AS nb_tags
@@ -72,7 +145,22 @@ $plusTagues = $pdo->query("
 ")->fetchAll();
 
 
+
 // 5. FILMS LES PLUS CONTROVERSES
+    /* 
+
+    On cherche les films les plus controversés à partir des films dont les avis sont les plus dispersés.
+   
+    On va faire une jointure entre la table film et la table noter pour récupérer les notes associées aux films.
+   
+   On va grouper par film afin de calculer la moyenne, l'écart-type et le nombre des notes pour chaque film.
+    
+   On va trier par écart-type décroissant afin d'obtenir les films les plus controversés en premier.
+   
+   On limite enfin aux 10 films les plus controversés.
+
+   */
+
 $plusControverses = $pdo->query("
      SELECT f.titre, 
             ROUND(AVG(n.note), 2)      AS moyenne,
@@ -93,6 +181,18 @@ $plusControverses = $pdo->query("
 
 
 //6. REPARTITION PAR GENRE 
+    /* 
+
+    On cherche la répartition des films par genre.
+   
+    On va faire une jointure entre la table genre et la table film_genre pour associer les films à leurs genres.
+   
+   On va grouper par genre afin de compter le nombre de films pour chaque genre.
+    
+   On va trier par nombre de films décroissant afin d'obtenir les genres les plus représentés en premier.
+   
+   */
+
 $genre = $pdo->query("
     SELECT g.nomGenre, 
             COUNT(fg.idFilm)              AS nb_films
@@ -106,6 +206,22 @@ $genre = $pdo->query("
 
 
 // 7. REPARTITION PAR DECENNIE 
+
+ /* 
+    On cherche la répartition des films par décennie.
+   
+    On va faire une jointure entre la table annee et la table film pour associer les films à leurs années de sortie.
+   
+    On récupère l’année du film et on la regroupe par tranche de 10 ans.
+
+    On calcule la décennie en utilisant FLOOR(an / 10) * 10.
+
+   On va grouper par décennie afin de compter le nombre de films pour chaque décennie.
+    
+   On va trier les décennies par ordre chronologique croissant afin de voir l'évolution du nombre de films au fil du temps.
+
+   */
+
 $decennie = $pdo->query("
     SELECT (FLOOR(a.an / 10) * 10) AS decennie,
            COUNT(f.idFilm)         AS nb_films
@@ -119,6 +235,22 @@ $decennie = $pdo->query("
 
 
 // 8. TAGS LES PLUS UTILISES 
+
+/*
+    On veut connaître les tags les plus utilisés.
+
+    On fait une jointure entre la table tag et la table taguer pour récupérer 
+    les associations.
+
+    On regroupe par tag afin de compter le nombre d’utilisations de chaque tag.
+
+    On va trier par nombre d’utilisations décroissant afin de mettre en avant 
+    les tags les plus populaires.
+
+    On limite enfin aux 5 tags les plus utilisés.
+*/
+
+
 $topTags = $pdo->query("
     SELECT t.tagText,
            COUNT(tg.idTag) AS nb_utilisations
