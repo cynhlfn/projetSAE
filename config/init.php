@@ -30,7 +30,8 @@ try {
 
 // ── tmdb.php ─────────────────────────────────────────────────
 
-if (getenv("TMDB_TOKEN")) {
+if (!file_exists(__DIR__ . '/tmdb.php') && getenv("TMDB_TOKEN")) {
+
   file_put_contents(
     __DIR__ . '/tmdb.php',
     '<?php
