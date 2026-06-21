@@ -108,7 +108,7 @@ $etoilesVides   = 5 - $etoilespleines - $demiEtoile; // le reste
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
   <link href="public/css/style.css" rel="stylesheet"> <!-- après Bootstrap -->
 </head>
 
@@ -159,7 +159,14 @@ $etoilesVides   = 5 - $etoilespleines - $demiEtoile; // le reste
               <span><?= $annee['an'] ?></span>
               <span>• <?= $runtime ?> min</span>
             </div>
-
+            <div class="film-meta mb-3">
+              <?php if (!empty($realisateurs)): ?>
+                <span>
+                  <i class="bi bi-person-video3"></i>
+                  <?= implode(', ', array_map('htmlspecialchars', $realisateurs)) ?>
+                </span>
+              <?php endif; ?>
+            </div>
             <!-- GENRES -->
             <div class="mb-3">
               <?php foreach ($genres as $genre): ?>
@@ -168,7 +175,16 @@ $etoilesVides   = 5 - $etoilespleines - $demiEtoile; // le reste
                 </span>
               <?php endforeach; ?>
             </div>
-
+            <!-- tages -->
+            <?php if (!empty($tags)): ?>
+              <div class="mb-3">
+                <?php foreach ($tags as $tag): ?>
+                  <span class="badge genre-badge me-1">
+                    #<?= htmlspecialchars($tag['tagText']) ?>
+                  </span>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
             <!-- NOTE -->
             <div class="mb-3">
               <?php for ($i = 0; $i < $etoilespleines; $i++): ?>
