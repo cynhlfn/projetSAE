@@ -3,9 +3,6 @@ require __DIR__ . '/config/init.php';
 require __DIR__ . '/config/database.php';
 require __DIR__ . '/config/tmdb.php';
 
-echo "TMDB_TOKEN : " . getenv("TMDB_TOKEN") . "<br>";
-echo "TMDB_READ_TOKEN : " . TMDB_READ_TOKEN . "<br>";
-die();
 
 // pour la pagination
 // regle de calcul : offset = (page - 1) * limit
