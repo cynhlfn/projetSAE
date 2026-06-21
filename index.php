@@ -15,12 +15,15 @@ $selectedGenre = $_GET['genre'] ?? null;
 
 $search = trim($_GET['search'] ?? '');
 
+$sort = $_GET['sort'] ?? 'title-asc';
+
 $where = "
     f.idAn = a.idAn
     AND f.idFilm = fi.idFilm
     AND f.idFilm = fg.idFilm
     AND fg.idGenre = g.idGenre
 ";
+
 $params = [];
 
 if ($selectedGenre) {
@@ -29,12 +32,28 @@ if ($selectedGenre) {
 }
 
 if (!empty($search)) {
-  $where .= "AND f.titre LIKE :search";
+  $where .= " AND f.titre LIKE :search";
   $params[':search'] = "%$search%";
 }
 
 $queryGenre = $selectedGenre ? '&genre=' . urlencode($selectedGenre) : '';
 
+$orderBy = "f.titre ASC";
+
+switch ($sort) {
+  case 'note-desc':
+    $orderBy = "note_moyenne DESC, f.titre ASC";
+    break;
+  case 'year-asc':
+    $orderBy = "a.an ASC, f.titre ASC";
+    break;
+  case 'year-desc':
+    $orderBy = "a.an DESC, f.titre ASC";
+    break;
+  case 'title-asc':
+    $orderBy = "f.titre ASC";
+    break;
+}
 
 $sql = "
 SELECT
@@ -51,7 +70,7 @@ SELECT
 FROM film f, annee a, fichefilm fi, film_genre fg, genre g
 WHERE $where
 GROUP BY f.idFilm, f.titre, a.an, fi.tmdbid
-ORDER BY f.titre ASC
+ORDER BY $orderBy
 LIMIT :limit OFFSET :offset
 ";
 // Récupération des films
@@ -78,7 +97,7 @@ if ($selectedGenre) {
 }
 
 if (!empty($search)) {
-  $countSql .= "AND f.titre LIKE :search";
+  $countSql .= " AND f.titre LIKE :search";
 }
 
 $countStmt = $pdo->prepare($countSql);
@@ -151,25 +170,29 @@ function getPoster($tmdbid)
     <!-- FILTRES -->
     <div class="bg-light py-3 border-bottom">
       <div class="container">
-        <div class="row g-3 align-items-center">
-          <!-- Recherche -->
-          <div class="col-md-5">
-            <form method="GET">
+        <form method="GET">
+
+          <div class="row g-3 align-items-center">
+            <!-- Recherche -->
+            <div class="col-md-5">
+
               <input type="text" name="search" class="form-control" placeholder="🔍 Rechercher un film..." value="<?= htmlspecialchars($search) ?>">
               <button type="submit" class="btn btn-primary">Rechercher</button>
-            </form>
+
+            </div>
+
+            <!-- Tri -->
+            <div class="col-md-4">
+              <select name="sort" id="sort-select" class="form-select">
+                <option value="note-desc">Note décroissante</option>
+                <option value="year-desc">Année récente</option>
+                <option value="year-asc">Année ancienne</option>
+                <option value="title-asc">Titre A-Z</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Tri -->
-          <div class="col-md-4">
-            <select id="sort-select" class="form-select">
-              <option value="note-desc">Note décroissante</option>
-              <option value="year-desc">Année récente</option>
-              <option value="year-asc">Année ancienne</option>
-              <option value="title-asc">Titre A-Z</option>
-            </select>
-          </div>
-        </div>
+        </form>
 
         <!-- Boutons Genres -->
         <div class="mt-3" id="genres-container">
@@ -222,7 +245,7 @@ function getPoster($tmdbid)
 
       <!-- PREV -->
       <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?page=<?= max(1, $page - 1) ?><?= $queryGenre ?>">Prev</a>
+        <a class="page-link" href="?page=<?= max(1, $page - 1) ?><?= $queryGenre ?>&search=<?= urlencode($search) ?>&sort=<?= urlencode($sort) ?>">Prev</a>
       </li>
 
       <!-- PAGES -->
@@ -232,7 +255,7 @@ function getPoster($tmdbid)
       ?>
       <?php for ($i = $start; $i <= $end; $i++): ?>
         <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-          <a class="page-link" href="?page=<?= $i ?><?= $queryGenre ?>">
+          <a class="page-link" href="?page=<?= $i ?><?= $queryGenre ?>&search=<?= urlencode($search) ?>&sort=<?= urlencode($sort) ?>">
             <?= $i ?>
           </a>
         </li>
@@ -240,7 +263,7 @@ function getPoster($tmdbid)
 
       <!-- NEXT -->
       <li class="page-item <?= ($page >= $pages) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?page=<?= min($pages, $page + 1) ?><?= $queryGenre ?>">Next</a>
+        <a class="page-link" href="?page=<?= min($pages, $page + 1) ?><?= $queryGenre ?>&search=<?= urlencode($search) ?>&sort=<?= urlencode($sort) ?>">Next</a>
       </li>
 
     </ul>
