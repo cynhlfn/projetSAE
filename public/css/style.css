@@ -43,6 +43,10 @@ body {
 .logo span {
   color: var(--orange);
 }
+
+.stats-page .logo-stats i {
+  color: var(--blue) !important;
+}
 /* Buttons */
 .btn-stats {
   background: var(--orange);
@@ -345,6 +349,34 @@ body {
 .text-muted {
   color: var(--muted) !important;
 }
-/* Mobile responsive  */
 
+/* solution de derniere minute a modifier prochainement*/
+/* =========================
+   STATS PAGE - NO RED ZONE
+   ========================= */
+
+.stats-page .text-danger,
+.stats-page .text-warning-emphasis {
+  color: var(--blue) !important;
+}
+
+/* suppression TOTAL du danger Bootstrap */
+.stats-page .bg-danger {
+  background: var(--blue) !important;
+}
+
+/* override progress bars rouges */
+.stats-page .progress-bar {
+  background: var(--blue) !important;
+}
+
+/* badges rouges éventuels */
+.stats-page .badge.bg-danger {
+  background: var(--orange) !important;
+}
+
+/* fallback sécurité */
+.stats-page [class*="danger"] {
+  color: var(--blue) !important;
+}
 /* ************* */
