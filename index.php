@@ -12,6 +12,9 @@ $offset = ($page - 1) * $limit;
 $genres = $pdo->query("SELECT * FROM genre ORDER BY nomGenre")->fetchAll(PDO::FETCH_ASSOC);
 // recuperer le genres 
 $selectedGenre = $_GET['genre'] ?? null;
+
+$search = trim($_GET['search'] ?? '');
+
 $where = "
     f.idAn = a.idAn
     AND f.idFilm = fi.idFilm
@@ -23,6 +26,11 @@ $params = [];
 if ($selectedGenre) {
   $where .= " AND g.nomGenre = :genre";
   $params[':genre'] = $selectedGenre;
+}
+
+if (!empty($search)) {
+  $where .= "AND f.titre LIKE :search";
+  $params[':search'] = "%$search%";
 }
 
 $queryGenre = $selectedGenre ? '&genre=' . urlencode($selectedGenre) : '';
@@ -69,10 +77,18 @@ if ($selectedGenre) {
   $countSql .= " AND g.nomGenre = :genre";
 }
 
+if (!empty($search)) {
+  $countSql .= "AND f.titre LIKE :search";
+}
+
 $countStmt = $pdo->prepare($countSql);
 
 if ($selectedGenre) {
   $countStmt->bindValue(':genre', $selectedGenre);
+}
+
+if (!empty($search)) {
+  $countStmt->bindValue(':search', "%$search%");
 }
 
 $countStmt->execute();
@@ -138,7 +154,10 @@ function getPoster($tmdbid)
         <div class="row g-3 align-items-center">
           <!-- Recherche -->
           <div class="col-md-5">
-            <input type="text" id="search-input" class="form-control" placeholder="🔍 Rechercher un film...">
+            <form method="GET">
+              <input type="text" name="search" class="form-control" placeholder="🔍 Rechercher un film..." value="<?= htmlspecialchars($search) ?>">
+              <button type="submit" class="btn btn-primary">Rechercher</button>
+            </form>
           </div>
 
           <!-- Tri -->
@@ -154,9 +173,11 @@ function getPoster($tmdbid)
 
         <!-- Boutons Genres -->
         <div class="mt-3" id="genres-container">
-          <a href="?" class="btn btn-dark me-2 mb-2">Tous</a> <?php foreach ($genres as $g): ?>
+          <a href="?" class="btn btn-dark me-2 mb-2">Tous</a>
+          <?php foreach ($genres as $g): ?>
+            <?php $isActive = ($selectedGenre == $g['nomGenre']) ?>
             <a href="?genre=<?= urlencode($g['nomGenre']) ?>"
-              class="btn btn-outline-secondary me-2 mb-2">
+              class="btn <?= $isActive ? 'btn-dark' : 'btn-outline-secondary' ?> me-2 mb-2">
               <?= htmlspecialchars($g['nomGenre']) ?>
             </a>
           <?php endforeach; ?>
