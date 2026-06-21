@@ -106,12 +106,13 @@ Nous utilisons des données recueillies sur le site https://grouplens.org/datase
 
 Notre dataset est celui regroupant les données des films de MovieLens, dans sa version recommandée pour les projets réalisés dans un cadre éducatif (`ml-latest-small.zip`).
 
-**Propriétés :**
+#### Propriétés du dataset
+
 - Taille : 1 Mo
 - Films : 9000
 - Utilisateurs : 600
 
-**Fichiers contenus :**
+#### Fichiers contenus
 
 `movies.csv` :
 - `movieId` (exemple : 1)
@@ -137,6 +138,8 @@ Notre dataset est celui regroupant les données des films de MovieLens, dans sa 
 
 Grâce à ces deux derniers identifiants, nous pouvons récupérer des données supplémentaires comme les affiches de films.
 
+#### Modèle conceptuel des données (MCD)
+
 Nous avons ensuite réfléchi à un modèle entité-association pour notre site, qui nous a aidés à correctement organiser les données fournies par le dataset.
 
 Voici le modèle conceptuel des données de notre base de données :
@@ -145,6 +148,38 @@ Voici le modèle conceptuel des données de notre base de données :
 
 - Nous avons fait le choix de créer une table séparée pour les années, afin d'éviter de stocker une même année plusieurs fois (si 50 films sont sortis en 1998, on n'aura pas l'année stockée 50 fois, mais une seule fois dans la table `annees`).
 - Un modèle relationnel est conçu avant la création de la base de données. Une normalisation a ainsi été faite en vérifiant toutes les formes normales, avant d'écrire les requêtes SQL de création et de réponse aux besoins que notre site présente.
+
+#### Modèle relationnel
+```
+annee((idAn), an)
+film((idFilm), titre, #idAn)
+genre((idGenre), nomGenre)
+film_genre((#idFilm, #idGenre))
+fichefilm((idFiche), #idFilm, imdbid, tmdbid)
+utilisateur((idUtilisateur))
+noter((#idUtilisateur, #idFilm), note, dateRating)
+tag((idTag), tagText)
+taguer((#idUtilisateur, #idFilm, #idTag), dateT)
+
+```
+
+#### Limites du modèle relationnel à grande échelle
+
+##### Scénario de forte montée en charge
+
+Imaginons que WikiFilm passe de 9 000 films et 600 utilisateurs à plusieurs millions de films et d'utilisateurs, avec des millions de notes (`noter`) et de tags (`taguer`) associés. Le schéma relationnel actuel ne serait plus adapté à cette échelle, car un seul serveur n'aurait plus assez de place pour stocker toutes ces données (même en ajoutant plus de CPU ou de RAM au serveur, on atteint vite une limite physique et économique).
+
+##### Pourquoi le modèle relationnel devient limitant
+
+Une approche pour résoudre ce problème de volume est de distribuer les données sur plusieurs serveurs différents (sharding). Mais dans ce cas, les jointures entre tables deviennent très coûteuses : si la table `noter` est sur un serveur et la table `film` sur un autre, une requête qui les relie doit traverser le réseau entre les machines, ce qui ralentit considérablement les performances.
+
+Les requêtes qui poseraient particulièrement problème sont celles impliquant des jointures sur les tables d'association à fort volume, comme `noter`, `taguer` ou `film_genre` — par exemple, *"récupérer tous les films notés par un utilisateur avec leur titre"* ou *"filtrer les films par genre et par note"*.
+
+##### Alternative NoSQL (conceptuelle)
+
+C'est là qu'intervient le NoSQL, avec MongoDB par exemple, pour répondre à ce problème. Au lieu de stocker les données dans des tables séparées et reliées par des clés étrangères, on les stocke sous forme de **documents** (typiquement au format JSON). Chaque film serait ainsi représenté par un document unique contenant déjà ses informations associées — par exemple, on aurait accès à tous les tags d'un film directement dans son document, sans avoir besoin d'une jointure.
+
+Cette approche a cependant un coût : les mises à jour groupées deviennent plus difficiles. Par exemple, renommer un genre ("Comedy" en "Comédie") demanderait de modifier chaque document film concerné un par un, alors qu'en relationnel un seul `UPDATE` sur la table `genre` suffit pour tous les films d'un coup. C'est précisément pour cette raison qu'on pourrait choisir de garder certaines données en relationnel (comme les genres, qui changent rarement) plutôt que de tout migrer en NoSQL.
 
 
 
