@@ -247,7 +247,7 @@ function getPosters(array $films): array
             data-genres="<?= htmlspecialchars(strtolower($film['genres'] ?? '')) ?>"
             data-year="<?= $film['annee'] ?>"
             data-note="<?= $film['note_moyenne'] ?? 0 ?>">
-            <div class="film-card h-100" onclick="showDetail(<?= $film['idFilm'] ?>)">
+            <div class="film-card h-100" onclick="window.location.href='film.php?id=<?= $film['idFilm'] ?>'">
               <div class="film-poster"
                 style="background-image: url('<?= $poster ? htmlspecialchars($poster) : 'https://via.placeholder.com/300x420/1a2634/ffffff?text=' . urlencode($film['titre']) ?>')">
               </div>
