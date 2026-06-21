@@ -16,6 +16,38 @@ Notre site répond aux besoins suivants :
 
 ## Installation et lancement du projet en local
 
+### Prérequis
+- XAMPP installé
+- Git installé
+
+### Étapes
+
+1. Cloner le dépôt dans le dossier `htdocs` de XAMPP :
+```bash
+git clone https://github.com/cynhlfn/projetSAE.git
+```
+
+2. Copier le fichier de configuration de la base de données :
+```bash
+cp config/database.example.php config/database.php
+```
+Remplir les identifiants de connexion Railway fournis par l'équipe.
+
+3. Créer le fichier de configuration TMDB :
+```bash
+cp config/tmdb.example.php config/tmdb.php
+```
+Remplir avec votre propre clé API TMDB (gratuite sur https://www.themoviedb.org/).
+
+4. Démarrer XAMPP (Apache + MySQL).
+
+5. Accéder au site sur :
+```
+http://localhost/projetSAE/index.php
+```
+
+## Accès au site web sans installation en local
+
 Vous pouvez accéder au site directement à partir de ce lien :
 
 [WikiFilm](https://projetsae-production.up.railway.app/index.php)
@@ -137,6 +169,13 @@ Voici le modèle conceptuel des données de notre base de données :
 
 
 ## Amélioration possible
+
+- Ajouter un système d'authentification pour permettre aux utilisateurs de noter et taguer les films
+- Permettre la recherche par réalisateur ou par acteur via l'API TMDB
+- Ajouter un système de recommandation de films
+- Optimiser les requêtes SQL pour que le site prenne moins de temps au chargement
+- Utiliser une base NoSQL (par exemple pour les tags ou les commentaires, plus flexibles qu'en relationnel)
+- Mettre en cache les réponses de l'API TMDB pour réduire le nombre d'appels externes
 
 
 ## Auteurs
