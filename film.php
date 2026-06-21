@@ -109,7 +109,15 @@ $etoilesVides   = 5 - $etoilespleines - $demiEtoile; // le reste
 </head>
 
 <body>
-
+  <!-- HEADER -->
+  <header class="border-bottom py-3">
+    <div class="container">
+      <h1 class="logo">🎬 <span>Wiki</span>film</h1>
+    </div>
+  </header>
+  <a href="index.php" class="btn btn-secondary mb-3">
+    ← Retour à l’accueil
+  </a>
   <div class="container"> <!-- centre le contenu et limite la largeur -->
     <div class="row"> <!-- crée une ligne -->
 
